@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-import os
-import time
 import datetime
+import time
 
 from requests.exceptions import ConnectionError, ReadTimeout
 
@@ -29,7 +28,6 @@ def ban_invited_bots(message):
         return
 
     new_users.ban_bots(message)
-    new_users.restrict(message)
     bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
 
 
@@ -170,6 +168,31 @@ def scan_for_spam(message):
         )
 
 
+@bot.callback_query_handler(func=lambda call: call.data.startswith("captcha"))
+def captcha_handler(call):
+    user_id = call.from_user.id
+    distinct_key = new_users.build_distinct_key(call.message)
+    if not config.r.exists(distinct_key):
+        return  # captcha message doesn't exists
+    user_belong_to_this_captcha = config.r.srem(distinct_key, user_id)
+    if not user_belong_to_this_captcha:
+        return bot.answer_callback_query(call.id, text="Это сообщение не для тебя.")
+    restricted_users_left = config.r.scard(distinct_key)
+    if not restricted_users_left:
+        # if not users left for current captcha, remove captcha message
+        config.r.delete(distinct_key)
+        bot.delete_message(config.chat_id, call.message.message_id)
+        # cancel restriction job because all users already solved the captcha
+        new_users.SCHEDULED_JOBS[new_users.build_distinct_key(call.message)].cancel()
+    if call.data == "captcha_passed":
+        bot.restrict_chat_member(chat_id=config.chat_id, user_id=user_id, can_send_messages=True)
+        new_users.add_user(call.from_user)
+        new_users.restrict(user_id)
+        bot.answer_callback_query(call.id, text="Welcome!")
+    else:
+        new_users.kick_member(user_id)
+
+
 # Callback handler for the admins' judgment
 @bot.callback_query_handler(func=lambda call: True)
 def callback_inline(call):
@@ -200,12 +223,10 @@ if __name__ == "__main__":
     while True:
         try:
             bot.polling(none_stop=True, timeout=60)
+            break
         except ConnectionError:
             logger.exception("ConnectionError")
             time.sleep(15)
         except ReadTimeout:
             logger.exception("ReadTimeout")
             time.sleep(10)
-        except KeyboardInterrupt:
-            logger.info("Good-bye")
-            os._exit(0)

@@ -12,6 +12,7 @@ sentry_sdk.init(SENTRY_SDK)
 
 bot_token = tokens.bot  # set your token in .bashrc (see tokens.py)
 chat_name = "@ru_python_beginners"
+CAPTCHA_TIMEOUT = 60  # 1 minute
 MAX_FILE_SIZE = 1_000_000  # bytes
 EXTENSIONS = [".py", ".txt", ".json"]
 GIT_TOKEN = os.environ.get("GIT_TOKEN")
@@ -57,4 +58,9 @@ nometa = """
 Пожалуйста, не задавайте мета-вопросов в чате!
 Мета-вопрос - это вопрос, который подразумевает другие вопросы.
 http://nometa.xyz/
+"""
+captcha_message = """
+Привет, {names}!\n
+Пожалуйста подтверди, что ты человек. 
+Если ты не сделаешь этого в течении {seconds} секунд, я буду вынужден прогнать тебя из чата.
 """
