@@ -193,6 +193,12 @@ def captcha_handler(call):
         new_users.kick_member(user_id)
 
 
+@bot.message_handler(commands=["captcha"], func=lambda m: m.from_user.id in config.admin_ids)
+def captcha_switcher(message):
+    config.CAPTCHA_ENABLED = not config.CAPTCHA_ENABLED
+    bot.reply_to(message, text=f"Captcha: {'enabled' if config.CAPTCHA_ENABLED else 'disabled'}")
+
+
 # Callback handler for the admins' judgment
 @bot.callback_query_handler(func=lambda call: True)
 def callback_inline(call):

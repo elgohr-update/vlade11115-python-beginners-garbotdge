@@ -25,7 +25,8 @@ def ban_bots(message):
     member_identifiers = {
         member.id: {
             "name": member.first_name,
-            "username": member.username
+            "username": member.username,
+            "member": member
         }
         for member in message.new_chat_members
     }
@@ -38,7 +39,12 @@ def ban_bots(message):
             if member.id != bot_id and not admin_invited:
                 bot.kick_chat_member(chat_id=config.chat_id, user_id=member.id)
                 logger.info("Bot {} has been kicked out".format(get_user(member)))
-    throw_captcha(message, member_identifiers)
+    if config.CAPTCHA_ENABLED:
+        throw_captcha(message, member_identifiers)
+    else:
+        for user_id, info in member_identifiers:
+            add_user(info["member"])
+            restrict(user_id)
 
 
 def add_user(member):

@@ -13,6 +13,7 @@ sentry_sdk.init(SENTRY_SDK)
 bot_token = tokens.bot  # set your token in .bashrc (see tokens.py)
 chat_name = "@ru_python_beginners"
 CAPTCHA_TIMEOUT = 60  # 1 minute
+CAPTCHA_ENABLED = False
 MAX_FILE_SIZE = 1_000_000  # bytes
 EXTENSIONS = [".py", ".txt", ".json"]
 GIT_TOKEN = os.environ.get("GIT_TOKEN")
