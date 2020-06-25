@@ -137,6 +137,12 @@ def document_to_paste(message):
             message.message_id
         )
     )
+    
+
+@bot.message_handler(commands=["captcha"], func=lambda m: m.from_user.id in config.admin_ids)
+def captcha_switcher(message):
+    config.CAPTCHA_ENABLED = not config.CAPTCHA_ENABLED
+    bot.reply_to(message, text=f"Captcha: {'enabled' if config.CAPTCHA_ENABLED else 'disabled'}")
 
 
 # Handler for monitoring messages of users who have <= 10 posts
@@ -191,12 +197,6 @@ def captcha_handler(call):
         bot.answer_callback_query(call.id, text="Welcome!")
     else:
         new_users.kick_member(user_id)
-
-
-@bot.message_handler(commands=["captcha"], func=lambda m: m.from_user.id in config.admin_ids)
-def captcha_switcher(message):
-    config.CAPTCHA_ENABLED = not config.CAPTCHA_ENABLED
-    bot.reply_to(message, text=f"Captcha: {'enabled' if config.CAPTCHA_ENABLED else 'disabled'}")
 
 
 # Callback handler for the admins' judgment
