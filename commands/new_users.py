@@ -42,7 +42,7 @@ def ban_bots(message):
     if config.CAPTCHA_ENABLED:
         throw_captcha(message, member_identifiers)
     else:
-        for user_id, info in member_identifiers:
+        for user_id, info in member_identifiers.items():
             add_user(info["member"])
             restrict(user_id)
 
